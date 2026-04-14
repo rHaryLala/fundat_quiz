@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Sante - FUNDAY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bungee:wght@400&family=Pacifico&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-1: #0a1628;
+      --bg-2: #0c1e38;
+      --panel: rgba(15, 23, 42, 0.72);
+      --line: rgba(14, 165, 233, 0.25);
+      --text: #e8f1f8;
+      --muted: rgba(184, 210, 229, 0.72);
+      --accent: #0ea5e9;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 20%, rgba(14, 165, 233, 0.15), transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(56, 189, 248, 0.12), transparent 38%),
+        linear-gradient(135deg, var(--bg-2), var(--bg-1));
+      overflow: hidden;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 18px 18px, 31px 31px;
+      background-position: 0 0, 9px 7px;
+    }
+
+    .topbar {
+      height: 62px;
+      border-bottom: 1px solid rgba(14, 165, 233, 0.14);
+      background: rgba(10, 22, 40, 0.75);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.2rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand {
+      display: flex;
+      gap: 0.7rem;
+      align-items: center;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 2px;
+    }
+
+    .brand-text {
+      display: grid;
+      gap: 0.05rem;
+    }
+
+    .title {
+      font-family: "Syne", sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .funday {
+      font-family: "Pacifico", cursive;
+      font-size: 1.1rem;
+      color: #fde68a;
+      text-shadow: 0 2px 14px rgba(245, 158, 11, 0.45);
+      line-height: 1;
+    }
+
+    .topbar-meta {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .screen {
+      height: calc(100vh - 62px);
+      display: grid;
+      place-items: center;
+      padding: 1.2rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card {
+      width: min(980px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 20px 60px rgba(2, 6, 23, 0.5);
+      overflow: hidden;
+    }
+
+    .intro {
+      display: grid;
+      gap: 1.1rem;
+      text-align: center;
+      padding: 2.2rem 1.3rem;
+    }
+
+    .intro h1 {
+      font-family: "Syne", sans-serif;
+      font-size: clamp(1.8rem, 6vw, 3.4rem);
+      line-height: 1.08;
+    }
+
+    .intro-logo {
+      width: min(180px, 40vw);
+      margin: 0 auto 0.2rem;
+      filter: drop-shadow(0 10px 30px rgba(15, 23, 42, 0.6));
+    }
+
+    .funday-banner {
+      font-family: "Bungee", sans-serif;
+      letter-spacing: 0.08em;
+      font-size: clamp(1.1rem, 3.8vw, 1.8rem);
+      background: linear-gradient(90deg, #fef08a, #fdba74, #fca5a5, #93c5fd, #86efac);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: pulseFestive 2.2s ease-in-out infinite;
+    }
+
+    .intro p {
+      max-width: 700px;
+      margin: 0 auto;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+    }
+
+    .badge {
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #bae6fd;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      background: rgba(14, 165, 233, 0.12);
+    }
+
+    .theme-select-wrap {
+      display: grid;
+      gap: 0.35rem;
+      justify-items: center;
+      margin-top: 0.35rem;
+    }
+
+    .theme-select-wrap label {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .theme-select {
+      width: min(420px, 92%);
+      padding: 0.72rem 0.8rem;
+      border-radius: 10px;
+      border: 1px solid rgba(56, 189, 248, 0.38);
+      color: var(--text);
+      background: rgba(14, 165, 233, 0.08);
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 0.96rem;
+      outline: none;
+    }
+
+    button {
+      border: 0;
+      outline: 0;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .primary-btn {
+      justify-self: center;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      border-radius: 12px;
+      padding: 0.78rem 1.4rem;
+      font-size: 1rem;
+      box-shadow: 0 10px 26px rgba(14, 165, 233, 0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .quiz {
+      display: none;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding: 1.1rem;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      min-height: 430px;
+    }
+
+    .quiz-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(3, 15, 29, 0.35), rgba(3, 15, 29, 0.08));
+    }
+
+    .stage-waves {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 100%;
+      transform-origin: bottom center;
+      transform: scale3d(1, 1, 1);
+      transition: transform 0.35s ease;
+    }
+
+    .stage-wave {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 100%;
+      animation: stageWaveMove 6s linear infinite;
+    }
+
+    .stage-wave-back {
+      color: rgba(44, 127, 190, 0.55);
+      animation-direction: reverse;
+    }
+
+    .stage-wave-front {
+      color: rgba(50, 186, 250, 0.55);
+    }
+
+    .stage-water {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 84%;
+      background: currentColor;
+    }
+
+    .stage-water:first-of-type {
+      transform: translateX(-100%);
+    }
+
+    .stage-water svg {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 99.9%;
+      width: 100%;
+      height: 38px;
+      fill: currentColor;
+    }
+
+    .quiz-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 14px;
+      padding: 0.8rem;
+      background: rgba(15, 23, 42, 0.72);
+      position: relative;
+      z-index: 2;
+    }
+
+    .counter {
+      font-size: 0.86rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .theme {
+      font-weight: 700;
+      color: #7dd3fc;
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      padding: 0.3rem 0.6rem;
+      border-radius: 9px;
+      font-size: 0.82rem;
+    }
+
+    .question-timer {
+      position: relative;
+      z-index: 2;
+      justify-self: center;
+      font-family: "Syne", sans-serif;
+      font-size: clamp(2rem, 8vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.06em;
+      color: #fef3c7;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      background: rgba(245, 158, 11, 0.14);
+      padding: 0.3rem 1rem;
+      border-radius: 12px;
+      min-width: 200px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.35);
+    }
+
+    .question-timer.danger {
+      color: #fee2e2;
+      border-color: rgba(239, 68, 68, 0.52);
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .question-wrap {
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 16px;
+      padding: 1.2rem;
+      background: rgba(15, 23, 42, 0.74);
+      min-height: 240px;
+      display: grid;
+      gap: 0.9rem;
+      align-content: start;
+      position: relative;
+      z-index: 2;
+    }
+
+    .question-text {
+      font-family: "Syne", sans-serif;
+      font-size: clamp(1.05rem, 3.4vw, 1.55rem);
+      line-height: 1.35;
+    }
+
+    .answer-block {
+      border-left: 3px solid var(--accent);
+      background: rgba(14, 165, 233, 0.1);
+      color: #d7f0ff;
+      padding: 0.9rem;
+      border-radius: 0 10px 10px 0;
+      display: none;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .ghost-btn,
+    .next-btn {
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .ghost-btn {
+      border: 1px solid rgba(14, 165, 233, 0.38);
+      color: #7dd3fc;
+      background: rgba(14, 165, 233, 0.08);
+    }
+
+    .next-btn {
+      background: rgba(34, 197, 94, 0.18);
+      color: #c7f9d5;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      display: none;
+    }
+
+    .progress-rail {
+      height: 10px;
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #0ea5e9, #22c55e);
+      transition: width 0.25s ease;
+    }
+
+    .summary {
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 14px;
+      padding: 0.9rem;
+      display: none;
+      background: rgba(2, 6, 23, 0.35);
+      line-height: 1.7;
+      position: relative;
+      z-index: 2;
+    }
+
+    .summary strong {
+      color: #fef08a;
+    }
+
+    @keyframes pulseFestive {
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+      }
+      50% {
+        transform: scale(1.03);
+        filter: drop-shadow(0 5px 12px rgba(252, 211, 77, 0.22));
+      }
+    }
+
+    @keyframes stageWaveMove {
+      0% {
+        transform: translate3d(0, 0, 0);
+      }
+      50% {
+        transform: translate3d(50%, 0.45em, 0);
+      }
+      100% {
+        transform: translate3d(100%, 0, 0);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .title {
+        font-size: 0.88rem;
+      }
+
+      .topbar-meta {
+        display: none;
+      }
+
+      .card {
+        border-radius: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="logo-uaz.png" alt="Logo UAZ" class="brand-logo" />
+      <div class="brand-text">
+        <span class="funday">FUNDAY</span>
+        <span class="title">Quiz Sante Universitaire</span>
+      </div>
+    </div>
+    <div class="topbar-meta">Evenement etudiant</div>
+  </header>
+
+  <main class="screen">
+    <section class="card">
+      <div class="intro" id="intro">
+        <img src="logo-uaz.png" alt="Logo UAZ" class="intro-logo" />
+        <div class="funday-banner">FUNDAY QUIZ CHALLENGE</div>
+        <h1>Questionnaire intelligent</h1>
+        <p>
+          Une partie contient 15 questions aleatoires avec melange equilibre des 3 themes:
+          Anatomie, Sante, Sante &amp; Technologie.
+        </p>
+        <div class="badge-row">
+          <span class="badge">1 partie = 15 questions</span>
+          <span class="badge">5 questions par theme</span>
+        </div>
+        <button class="primary-btn" id="startBtn">Commencer</button>
+      </div>
+
+      <div class="quiz" id="quiz">
+        <div class="quiz-stage" aria-hidden="true">
+          <div class="stage-waves" id="stageWaves">
+            <div class="stage-wave stage-wave-back">
+              <div class="stage-water">
+                <svg viewBox="0 0 350 32" preserveAspectRatio="none">
+                  <path d="M350,17.32V32H0V17.32C116.56,65.94,175,-39.51,350,17.32Z"></path>
+                </svg>
+              </div>
+              <div class="stage-water">
+                <svg viewBox="0 0 350 32" preserveAspectRatio="none">
+                  <path d="M350,17.32V32H0V17.32C116.56,65.94,175,-39.51,350,17.32Z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="stage-wave stage-wave-front">
+              <div class="stage-water">
+                <svg viewBox="0 0 350 32" preserveAspectRatio="none">
+                  <path d="M350,17.32V32H0V17.32C116.56,65.94,175,-39.51,350,17.32Z"></path>
+                </svg>
+              </div>
+              <div class="stage-water">
+                <svg viewBox="0 0 350 32" preserveAspectRatio="none">
+                  <path d="M350,17.32V32H0V17.32C116.56,65.94,175,-39.51,350,17.32Z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quiz-head">
+          <div class="counter" id="counter">Question 1 / 15</div>
+          <div class="theme" id="themeTag">Theme</div>
+        </div>
+
+        <div class="question-timer" id="questionTimer">00:30</div>
+
+        <div class="progress-rail">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <article class="question-wrap">
+          <div class="question-text" id="questionText"></div>
+          <div class="answer-block" id="answerBlock"></div>
+          <div class="actions">
+            <button class="ghost-btn" id="revealBtn">Voir la reponse</button>
+            <button class="next-btn" id="nextBtn">Question suivante</button>
+          </div>
+        </article>
+
+        <section class="summary" id="summary"></section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const questionsByTheme = {
+      Anatomie: [
+        { q: "Quel est l'os le plus long du corps humain ?", a: "Femur" },
+        { q: "Combien de vertebres compose la colonne vertebrale ?", a: "33" },
+        { q: "Quel organe filtre le sang ?", a: "Reins" },
+        { q: "Quelle partie du cerveau controle l'equilibre ?", a: "Cervelet" },
+        { q: "Quel muscle est responsable de la respiration ?", a: "Diaphragme" },
+        { q: "Combien de chambres possede le coeur humain ?", a: "4" },
+        { q: "Quel est le plus grand organe du corps ?", a: "La peau" },
+        { q: "Quel type de sang circule dans les arteres ?", a: "Sang oxygene (sauf artere pulmonaire)" },
+        { q: "Ou se trouve l'humerus ?", a: "Bras" },
+        { q: "Quel organe produit l'insuline ?", a: "Pancreas" },
+        { q: "Quelle est l'unite fonctionnelle du rein ?", a: "Nephron" },
+        { q: "Quelle partie du cerveau gere les emotions ?", a: "Systeme limbique" },
+        { q: "Quel os protege le cerveau ?", a: "Crane" },
+        { q: "Combien de paires de cotes possede un humain ?", a: "12" },
+        { q: "Quel organe est responsable de la digestion principale ?", a: "Intestin grele" },
+        { q: "Quel est le role des globules rouges ?", a: "Transport de l'oxygene" },
+        { q: "Ou se situe le tibia ?", a: "Jambe" },
+        { q: "Quel systeme controle les mouvements volontaires ?", a: "Systeme nerveux" },
+        { q: "Quel organe stocke la bile ?", a: "Vesicule biliaire" },
+        { q: "Quelle est la plus petite unite du corps humain ?", a: "Cellule" }
+      ],
+      Sante: [
+        { q: "Combien d'heures de sommeil sont recommandees pour un adulte ?", a: "7 a 9 heures" },
+        { q: "Quelle maladie est liee a un exces de sucre ?", a: "Diabete" },
+        { q: "Quel est le principal facteur de stress chez les etudiants ?", a: "Charge academique (souvent)" },
+        { q: "Quelle activite ameliore la sante mentale ?", a: "Sport" },
+        { q: "Quelle vitamine renforce le systeme immunitaire ?", a: "Vitamine C" },
+        { q: "Quelle boisson est essentielle a la vie ?", a: "Eau" },
+        { q: "Quel est le danger du manque de sommeil ?", a: "Baisse cognitive" },
+        { q: "Quelle maladie touche les poumons ?", a: "Asthme (exemple)" },
+        { q: "Quelle habitude ameliore la concentration ?", a: "Faire des pauses" },
+        { q: "Quelle est la cause principale de l'obesite ?", a: "Mauvaise alimentation + sedentarite" },
+        { q: "Quel aliment est riche en proteines ?", a: "Oeufs / viande / legumineuses" },
+        { q: "Quel est l'effet du stress chronique ?", a: "Fatigue + maladies" },
+        { q: "Quelle pratique reduit l'anxiete ?", a: "Respiration / meditation" },
+        { q: "Quelle maladie est liee a l'hypertension ?", a: "AVC" },
+        { q: "Quel est le role du sommeil ?", a: "Recuperation" },
+        { q: "Quelle habitude nuit a la sante mentale ?", a: "Isolement" },
+        { q: "Quelle frequence d'exercice est recommandee ?", a: "3 a 5 fois/semaine" },
+        { q: "Quel est le danger de la deshydratation ?", a: "Fatigue / troubles" },
+        { q: "Quel nutriment donne de l'energie ?", a: "Glucides" },
+        { q: "Quelle pratique ameliore la memoire ?", a: "Repetition + repos" }
+      ],
+      "Sante & Technologie": [
+        { q: "Quelle lumiere des ecrans perturbe le sommeil ?", a: "Lumiere bleue" },
+        { q: "Quelle technologie est utilisee en diagnostic medical avance ?", a: "IA" },
+        { q: "Quel est le risque d'un usage excessif du smartphone ?", a: "Addiction" },
+        { q: "Quelle innovation permet le suivi du sommeil ?", a: "Montres connectees" },
+        { q: "Quelle technologie permet les consultations a distance ?", a: "Telemedecine" },
+        { q: "Quel est l'effet des notifications constantes ?", a: "Baisse de concentration" },
+        { q: "Quelle technologie est utilisee en chirurgie assistee ?", a: "Robotique" },
+        { q: "Quel est le danger des ecrans avant de dormir ?", a: "Insomnie" },
+        { q: "Quelle innovation aide les personnes handicapees a marcher ?", a: "Exosquelettes" },
+        { q: "Quelle technologie analyse de grandes donnees medicales ?", a: "Big Data" },
+        { q: "Quel est le risque des ecouteurs a volume eleve ?", a: "Perte auditive" },
+        { q: "Quelle technologie est utilisee pour la formation medicale immersive ?", a: "Realite virtuelle" },
+        { q: "Quel est l'effet du multitache numerique ?", a: "Moins d'efficacite" },
+        { q: "Quelle application aide a suivre l'activite physique ?", a: "Apps fitness" },
+        { q: "Quel est le danger de rester assis longtemps devant un ecran ?", a: "Problemes cardiovasculaires" },
+        { q: "Quelle technologie permet de creer des protheses modernes ?", a: "Impression 3D" },
+        { q: "Quel est le risque mental des reseaux sociaux ?", a: "Anxiete" },
+        { q: "Quelle innovation permet la surveillance continue de la sante ?", a: "Objets connectes" },
+        { q: "Quel est l'impact du numerique sur le sommeil ?", a: "Perturbation" },
+        { q: "Quelle bonne habitude numerique protege la sante ?", a: "Limiter le temps d'ecran" }
+      ]
+    };
+
+    const THEMES_PER_ROUND = 3;
+    const QUESTIONS_PER_THEME = 5;
+    const QUESTIONS_PER_PART = THEMES_PER_ROUND * QUESTIONS_PER_THEME;
+    const TIME_PER_QUESTION = 30;
+
+    const introEl = document.getElementById("intro");
+    const quizEl = document.getElementById("quiz");
+    const startBtn = document.getElementById("startBtn");
+    const counterEl = document.getElementById("counter");
+    const themeTagEl = document.getElementById("themeTag");
+    const questionTextEl = document.getElementById("questionText");
+    const answerBlockEl = document.getElementById("answerBlock");
+    const revealBtn = document.getElementById("revealBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const progressBar = document.getElementById("progressBar");
+    const summaryEl = document.getElementById("summary");
+    const questionTimerEl = document.getElementById("questionTimer");
+    const stageWavesEl = document.getElementById("stageWaves");
+
+    let roundQuestions = [];
+    let currentIndex = 0;
+    let timerValue = TIME_PER_QUESTION;
+    let timerInterval = null;
+    let audioCtx = null;
+
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+          return null;
+        }
+        audioCtx = new AudioContextClass();
+      }
+
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+
+      return audioCtx;
+    }
+
+    function scheduleTone(freq, startTime, duration, type = "sine", volume = 0.04) {
+      const ctx = ensureAudioContext();
+      if (!ctx) {
+        return;
+      }
+
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(freq, startTime);
+
+      gainNode.gain.setValueAtTime(0.0001, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(volume, startTime + 0.015);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration + 0.02);
+    }
+
+    function playTimerTick() {
+      const ctx = ensureAudioContext();
+      if (!ctx) {
+        return;
+      }
+
+      const urgent = timerValue <= 7;
+      scheduleTone(
+        urgent ? 980 : 760,
+        ctx.currentTime,
+        0.08,
+        urgent ? "square" : "sine",
+        urgent ? 0.05 : 0.03
+      );
+    }
+
+    function playTimeUpSound() {
+      const ctx = ensureAudioContext();
+      if (!ctx) {
+        return;
+      }
+
+      const t0 = ctx.currentTime;
+      scheduleTone(740, t0, 0.12, "triangle", 0.06);
+      scheduleTone(620, t0 + 0.14, 0.12, "triangle", 0.06);
+      scheduleTone(420, t0 + 0.3, 0.28, "sawtooth", 0.07);
+    }
+
+    function formatTime(totalSeconds) {
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function updateStageBackground() {
+      const percentLeft = Math.max(0, Math.round((timerValue / TIME_PER_QUESTION) * 100));
+      stageWavesEl.style.transform = `scale3d(1, ${Math.max(0, percentLeft / 100)}, 1)`;
+    }
+
+    function shuffle(list) {
+      const arr = [...list];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function pickRandom(list, count) {
+      return shuffle(list).slice(0, count);
+    }
+
+    function buildBalancedRound() {
+      const mixed = [];
+
+      Object.entries(questionsByTheme).forEach(([theme, list]) => {
+        const sampled = pickRandom(list, QUESTIONS_PER_THEME).map((item) => ({
+          ...item,
+          theme
+        }));
+        mixed.push(...sampled);
+      });
+
+      return shuffle(mixed);
+    }
+
+    function clearQuestionTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      questionTimerEl.textContent = formatTime(timerValue);
+      questionTimerEl.classList.toggle("danger", timerValue <= 7);
+      updateStageBackground();
+    }
+
+    function startQuestionTimer() {
+      clearQuestionTimer();
+      timerValue = TIME_PER_QUESTION;
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        timerValue -= 1;
+        updateTimerDisplay();
+
+        if (timerValue > 0) {
+          playTimerTick();
+        }
+
+        if (timerValue <= 0) {
+          clearQuestionTimer();
+          handleTimeUp();
+        }
+      }, 1000);
+    }
+
+    function resetQuestionView() {
+      answerBlockEl.style.display = "none";
+      nextBtn.style.display = "none";
+      revealBtn.style.display = "inline-block";
+      revealBtn.disabled = false;
+      summaryEl.style.display = "none";
+    }
+
+    function renderQuestion() {
+      const item = roundQuestions[currentIndex];
+      counterEl.textContent = `Question ${currentIndex + 1} / ${roundQuestions.length}`;
+      themeTagEl.textContent = item.theme;
+      questionTextEl.textContent = item.q;
+      answerBlockEl.textContent = `Reponse: ${item.a}`;
+      progressBar.style.width = `${((currentIndex) / roundQuestions.length) * 100}%`;
+      resetQuestionView();
+      startQuestionTimer();
+    }
+
+    function goToNextQuestion() {
+      if (currentIndex >= roundQuestions.length - 1) {
+        if (summaryEl.style.display === "block") {
+          roundQuestions = buildBalancedRound();
+          currentIndex = 0;
+          nextBtn.textContent = "Question suivante";
+          renderQuestion();
+          return;
+        }
+        showSummary();
+        return;
+      }
+
+      currentIndex += 1;
+      renderQuestion();
+    }
+
+    function handleTimeUp() {
+      if (revealBtn.disabled || summaryEl.style.display === "block") {
+        return;
+      }
+
+      playTimeUpSound();
+
+      answerBlockEl.textContent = "Temps ecoule. Clique sur 'Question suivante' pour continuer.";
+      answerBlockEl.style.display = "block";
+      nextBtn.style.display = "inline-block";
+      revealBtn.disabled = false;
+    }
+
+    function showSummary() {
+      clearQuestionTimer();
+      progressBar.style.width = "100%";
+      summaryEl.innerHTML = `
+        <h3 style="font-family: Syne, sans-serif; margin-bottom: .5rem;">Session terminee</h3>
+        <p>Partie jouee: <strong>${QUESTIONS_PER_PART}</strong> questions melangees.</p>
+        <p style="margin-top: .35rem;">Repartition: ${QUESTIONS_PER_THEME} Anatomie + ${QUESTIONS_PER_THEME} Sante + ${QUESTIONS_PER_THEME} Sante &amp; Technologie.</p>
+        <p style="margin-top: .5rem; color: var(--warn);">Recommence pour un nouveau tirage aleatoire equilibre.</p>
+      `;
+      summaryEl.style.display = "block";
+      nextBtn.textContent = "Recommencer";
+      nextBtn.style.display = "inline-block";
+      revealBtn.style.display = "none";
+    }
+
+    startBtn.addEventListener("click", () => {
+      ensureAudioContext();
+      roundQuestions = buildBalancedRound();
+      currentIndex = 0;
+      introEl.style.display = "none";
+      quizEl.style.display = "grid";
+      nextBtn.textContent = "Question suivante";
+      renderQuestion();
+    });
+
+    revealBtn.addEventListener("click", () => {
+      if (summaryEl.style.display === "block") {
+        return;
+      }
+
+      clearQuestionTimer();
+      answerBlockEl.textContent = `Reponse: ${roundQuestions[currentIndex].a}`;
+      answerBlockEl.style.display = "block";
+      nextBtn.style.display = "inline-block";
+      revealBtn.disabled = true;
+    });
+
+    nextBtn.addEventListener("click", () => {
+      goToNextQuestion();
+    });
+
+    updateStageBackground();
+  </script>
+</body>
+</html>
